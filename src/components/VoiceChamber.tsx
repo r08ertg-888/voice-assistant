@@ -214,6 +214,10 @@ export const VoiceChamber: React.FC<VoiceChamberProps> = ({
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
       const data = await response.json();
       const replyText = data.text || data.fallbackText || "I am at your service on behalf of Robert Gammer.";
 
@@ -225,19 +229,33 @@ export const VoiceChamber: React.FC<VoiceChamberProps> = ({
       };
 
       setMessages((prev) => [...prev, alexMsg]);
-
-      // Speak Alex's response in deep male tone
       await speakAlexResponse(replyText, alexMsg.id);
     } catch (err) {
-      console.error('Chat request failed:', err);
-      const fallbackMsg: ChatMessage = {
-        id: `alex-err-${Date.now()}`,
+      console.warn('Backend chat unreachable, utilizing executive knowledge base:', err);
+      // Domain-resilient reply for serverless/static deployments
+      const q = trimmed.toLowerCase();
+      let replyText = "As Robert Gammer's representative, I am here to discuss his executive advisory mandates, corporate governance perspectives, or register a consultation request on your behalf. How may I direct our discussion?";
+      if (q.includes('background') || q.includes('who is') || q.includes('brief') || q.includes('profile')) {
+        replyText = "Robert Gammer is a senior executive, board trustee, and strategic advisor with over two decades of institutional leadership. He advises corporate executive committees and venture syndicates on structural transformation, enterprise AI integration, and long-term capital allocation.";
+      } else if (q.includes('philosophy') || q.includes('discipline') || q.includes('scale') || q.includes('approach')) {
+        replyText = "Robert's guiding philosophy is that discipline must always precede scale. In an era saturated with algorithmic excitement, he emphasizes architectural clarity, sovereign data moats, and durable governance over vanity metrics.";
+      } else if (q.includes('ai') || q.includes('artificial intelligence') || q.includes('enterprise ai') || q.includes('tech')) {
+        replyText = "On Enterprise AI, Robert guides leadership teams past surface-level experiments into deep operational integration. His focus is on establishing proprietary data flywheels, rigorous compliance safeguards, and clear return on invested capital.";
+      } else if (q.includes('consult') || q.includes('meet') || q.includes('schedul') || q.includes('contact') || q.includes('email') || q.includes('book')) {
+        replyText = "Robert accepts a strictly limited number of advisory appointments each quarter. You may submit your inquiry brief directly through our consultation channel, and Robert reviews all confidential messages personally at R08ERTG@gmail.com.";
+      } else if (q.includes('service') || q.includes('engagement') || q.includes('retain') || q.includes('practice') || q.includes('board')) {
+        replyText = "Robert's advisory practice operates across three distinct structures: Retained Board and Executive Trustee mandates, high-impact six-to-eight week Strategic AI Sprints, and confidential M&A technical due diligence.";
+      }
+
+      const alexMsg: ChatMessage = {
+        id: `alex-${Date.now()}`,
         sender: 'alex',
-        text: "On Robert's behalf, I invite you to leave a direct consultation inquiry or inquire regarding his governance advisory focus.",
+        text: replyText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages((prev) => [...prev, fallbackMsg]);
-      setStatus('idle');
+
+      setMessages((prev) => [...prev, alexMsg]);
+      await speakAlexResponse(replyText, alexMsg.id);
     }
   };
 
