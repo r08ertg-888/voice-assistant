@@ -1,0 +1,6 @@
+{
+  "name": "Alex · Voice Representative for Robert Gammer",
+  "description": "Sophisticated executive voice assistant representing Robert Gammer, providing strategic advisory insights, executive background, and direct consultation scheduling.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
